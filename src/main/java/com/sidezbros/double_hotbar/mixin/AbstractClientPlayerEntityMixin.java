@@ -7,26 +7,26 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.player.SkinTextures;
-import net.minecraft.util.AssetInfo;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.ClientAsset;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 
-@Mixin(AbstractClientPlayerEntity.class)
+@Mixin(AbstractClientPlayer.class)
 public abstract class AbstractClientPlayerEntityMixin {
 	
-	@Shadow protected abstract PlayerListEntry getPlayerListEntry();
+	@Shadow protected abstract PlayerInfo getPlayerInfo();
 	
 	@Inject(method = "getSkin", at = @At("RETURN"), cancellable = true)
-	private void getSkin(CallbackInfoReturnable<SkinTextures> cir) {
+	private void getSkin(CallbackInfoReturnable<PlayerSkin> cir) {
 		try {
-			PlayerListEntry playerListEntry = this.getPlayerListEntry();
-			if(playerListEntry.getProfile().id().toString().equals("f2d832c6-c3b4-41ed-937e-f49cd71c98a7")) {
-				SkinTextures skin_texture = playerListEntry.getSkinTextures();
-				Identifier elytraTexture = Identifier.of("double_hotbar", "textures/elytra.png");
-				SkinTextures texture = SkinTextures.create(skin_texture.body(), new AssetInfo.SkinAssetInfo(elytraTexture, "cape"), new AssetInfo.SkinAssetInfo(elytraTexture, "elytra"), skin_texture.model());
+			PlayerInfo playerInfo = this.getPlayerInfo();
+			if(playerInfo.getProfile().id().toString().equals("f2d832c6-c3b4-41ed-937e-f49cd71c98a7")) {
+				PlayerSkin skinTexture = playerInfo.getSkin();
+				ClientAsset.Texture elytraTexture = new ClientAsset.ResourceTexture(Identifier.fromNamespaceAndPath("double_hotbar", "textures/elytra.png"));
+				PlayerSkin texture = PlayerSkin.insecure(skinTexture.body(), elytraTexture, elytraTexture, skinTexture.model());
 				cir.setReturnValue(texture);
 			}
 		} catch(Exception e) {
